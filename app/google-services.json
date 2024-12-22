@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "345604362161",
+    "project_id": "rinconalfonsoimdbapp-37e88",
+    "storage_bucket": "rinconalfonsoimdbapp-37e88.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:345604362161:android:e84d8f79f2bd12bcdd7790",
+        "android_client_info": {
+          "package_name": "edu.pruebas.rincon_alfonsoimdbapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAksLRgk-JX3PwEhgSIVBucrP13KLyohFc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
