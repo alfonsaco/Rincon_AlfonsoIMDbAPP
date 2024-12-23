@@ -12,7 +12,36 @@
           "package_name": "edu.pruebas.rincon_alfonsoimdbapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "345604362161-1p0hjem7r65s8visse2dp54kc0slch4u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.pruebas.rincon_alfonsoimdbapp",
+            "certificate_hash": "24a141a1a047e1f356d584477bc66345510c3408"
+          }
+        },
+        {
+          "client_id": "345604362161-uhevgkr8qc9inft1usl51djagnrolnll.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.pruebas.rincon_alfonsoimdbapp",
+            "certificate_hash": "9b9520e80159316d50433b873e78fa7f8af57ef6"
+          }
+        },
+        {
+          "client_id": "345604362161-v2pcus0qsbmbv65iqrh752h07g8el57u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.pruebas.rincon_alfonsoimdbapp",
+            "certificate_hash": "fef1450d765df2cf93288011f1fa298bf7050cb7"
+          }
+        },
+        {
+          "client_id": "345604362161-c9mvg8lcaa7tfi2to0vme8tp1q9hr8a6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAksLRgk-JX3PwEhgSIVBucrP13KLyohFc"
@@ -20,7 +49,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "345604362161-c9mvg8lcaa7tfi2to0vme8tp1q9hr8a6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
