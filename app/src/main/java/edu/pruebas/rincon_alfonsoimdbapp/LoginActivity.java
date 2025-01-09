@@ -71,6 +71,7 @@ public class LoginActivity extends AppCompatActivity {
         if (currentUser != null) {
             irAMainActivity();
         }
+
     }
 
     // Launcher para comenzar el inicio de sesión
@@ -100,8 +101,7 @@ public class LoginActivity extends AppCompatActivity {
     // Autenticación con Firebase
     private void autentificarFirebase(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         irAMainActivity();
                     } else {
