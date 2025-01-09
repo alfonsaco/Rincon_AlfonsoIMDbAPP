@@ -16,17 +16,18 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import edu.pruebas.rincon_alfonsoimdbapp.MovieDetailsActivity;
+import edu.pruebas.rincon_alfonsoimdbapp.MovieDetailsActivity;
 import edu.pruebas.rincon_alfonsoimdbapp.R;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
 
     private final Context context;
-    private final List<Movie> movies;
+    private final List<Movie> peliculas;
 
-    public MovieAdapter(Context context, List<Movie> movies) {
+    public MovieAdapter(Context context, List<Movie> peliculas) {
         this.context = context;
-        this.movies = movies;
+        this.peliculas = peliculas;
     }
 
     @NonNull
@@ -38,39 +39,39 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Movie movie = movies.get(position);
+        Movie pelicula = peliculas.get(position);
 
         // Asignar datos a las vistas
-        holder.titleTextView.setText(movie.getTitulo());
-        holder.yearTextView.setText(movie.getFechaSalida());
+        holder.tituloTextView.setText(pelicula.getTitulo());
+        holder.anioTextView.setText(pelicula.getFechaSalida());
 
         // Cargar la imagen del póster usando Glide
         Glide.with(context)
-                .load(movie.getRutaPoster())
+                .load(pelicula.getRutaPoster())
                 .into(holder.posterImageView);
 
         // Listener para el clic en cada elemento
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MovieDetailsActivity.class);
-            intent.putExtra("pelicula", (CharSequence) movie);
+            intent.putExtra("pelicula", pelicula);
             context.startActivity(intent);
         });
     }
 
     @Override
     public int getItemCount() {
-        return movies.size();
+        return peliculas.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView titleTextView;
-        TextView yearTextView;
+        TextView tituloTextView;
+        TextView anioTextView;
         ImageView posterImageView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            titleTextView = itemView.findViewById(R.id.textViewTitle);
-            yearTextView = itemView.findViewById(R.id.textViewYear);
+            tituloTextView = itemView.findViewById(R.id.textViewTitle);
+            anioTextView = itemView.findViewById(R.id.textViewYear);
             posterImageView = itemView.findViewById(R.id.imageViewPoster);
         }
     }
