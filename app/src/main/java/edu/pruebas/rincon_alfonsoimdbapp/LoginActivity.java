@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         // Configurar Firebase y Google SignIn
-        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuth=FirebaseAuth.getInstance();
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -48,10 +48,10 @@ public class LoginActivity extends AppCompatActivity {
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
 
         // Obtenemos el botón, y cambiamos su texto
-        SignInButton signInButton = findViewById(R.id.btnSignIn);
+        SignInButton signInButton=findViewById(R.id.btnSignIn);
         ((TextView) signInButton.getChildAt(0)).setText("Sign in with Google");
 
-        // Configurar el clic en el botón
+        // Configurar el clicK en el botón
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -112,9 +112,15 @@ public class LoginActivity extends AppCompatActivity {
 
     // Volvemos a la MainActivity tras aber iniciado sesión de forma correcta
     private void irAMainActivity() {
-        Intent intent=new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finish();
+        FirebaseUser usuario=firebaseAuth.getCurrentUser();
+        if(usuario != null) {
+            Intent intent=new Intent(LoginActivity.this, MainActivity.class);
+            intent.putExtra("nombre", usuario.getDisplayName());
+            intent.putExtra("email", usuario.getEmail());
+            intent.putExtra("imagen", usuario.getPhotoUrl() != null ? usuario.getPhotoUrl().toString() : null);
+            startActivity(intent);
+            finish();
+        }
     }
 
 }
