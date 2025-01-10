@@ -59,8 +59,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> contactPickerLauncher;
     private ActivityResultLauncher<String> smsPermissionLauncher;
 
-    private FavoritesManager favoritesManager;
-
     private static final String BASE_URL = "https://imdb-com.p.rapidapi.com/";
     private IMDBApiService api;
 
@@ -99,22 +97,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 }
             }
         });
-
-        // Obtener el ID de usuario que esta usando la app. Con esto, podremos guardar los favoritos
-        // para cada usuario
-        FirebaseUser currentUser=FirebaseAuth.getInstance().getCurrentUser();
-        String userId = currentUser.getUid();
-
-        imageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                favoritesManager.addFavorite(userId, pelicula);
-                Toast.makeText(MovieDetailsActivity.this, "Película añadida a favoritos", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-
     }
 
     private void mostrarDetallesBasicos(Movie pelicula) {
