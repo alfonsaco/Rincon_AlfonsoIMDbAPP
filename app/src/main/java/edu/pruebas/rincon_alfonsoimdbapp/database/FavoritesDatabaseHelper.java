@@ -1,4 +1,4 @@
-package edu.pruebas.rincon_alfonsoimdbapp;
+package edu.pruebas.rincon_alfonsoimdbapp.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -6,37 +6,47 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "favorites.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final String NOMBRE_DATABASE="favoritos.db";
 
-    public static final String TABLE_NAME = "favorites";
-    public static final String COLUMN_ID = "_id";
-    public static final String COLUMN_USER_ID = "user_id";
-    public static final String COLUMN_MOVIE_ID = "movie_id";
-    public static final String COLUMN_TITLE = "title";
-    public static final String COLUMN_POSTER_PATH = "poster_path";
-    public static final String COLUMN_RATING = "rating";
-
-    private static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-            COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            COLUMN_USER_ID + " TEXT NOT NULL, " +
-            COLUMN_MOVIE_ID + " TEXT NOT NULL, " +
-            COLUMN_TITLE + " TEXT, " +
-            COLUMN_POSTER_PATH + " TEXT, " +
-            COLUMN_RATING + " TEXT);";
+    // Variables estáticas para cada dato de la tabbla
+    public static final String NOMBRE_TABLA="favoritos";
+    public static final String COLUMNA_ID="_id";
+    public static final String COLUMNA_ID_USUARIO="id_usuario";
+    public static final String COLUMNA_ID_PELICULA="id_pelicula";
+    public static final String COLUMNA_TITULO="titulo";
+    public static final String COLUMNA_RUTA_POSTER="ruta_poster";
+    public static final String COLUMNA_CALIFICACION="calificacion";
 
     public FavoritesDatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, NOMBRE_DATABASE, null, 1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE);
+        crearTablaFavoritos(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        eliminarTablaFavoritos(db);
         onCreate(db);
+    }
+
+    // Método para crear la tabla
+    public void crearTablaFavoritos(SQLiteDatabase db) {
+        String query = "CREATE TABLE " + NOMBRE_TABLA + " (" +
+                COLUMNA_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMNA_ID_USUARIO + " TEXT NOT NULL, " +
+                COLUMNA_ID_PELICULA + " TEXT NOT NULL, " +
+                COLUMNA_TITULO + " TEXT, " +
+                COLUMNA_RUTA_POSTER + " TEXT, " +
+                COLUMNA_CALIFICACION + " TEXT);";
+        db.execSQL(query);
+    }
+
+    // Método para borrar la tabla
+    public void eliminarTablaFavoritos(SQLiteDatabase db) {
+        String query = "DROP TABLE IF EXISTS " + NOMBRE_TABLA;
+        db.execSQL(query);
     }
 }

@@ -13,9 +13,9 @@
 
     <fragment
         android:id="@+id/nav_gallery"
-        android:name="edu.pruebas.rincon_alfonsoimdbapp.ui.gallery.GalleryFragment"
+        android:name="edu.pruebas.rincon_alfonsoimdbapp.ui.gallery.SearchFragment"
         android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_search" />
 
     <fragment
         android:id="@+id/nav_slideshow"

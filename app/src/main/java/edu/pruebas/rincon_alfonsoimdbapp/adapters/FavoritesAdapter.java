@@ -1,6 +1,7 @@
 package edu.pruebas.rincon_alfonsoimdbapp.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,23 +15,26 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import edu.pruebas.rincon_alfonsoimdbapp.MovieDetailsActivity;
 import edu.pruebas.rincon_alfonsoimdbapp.R;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
 
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.FavoriteViewHolder> {
 
+    // Contexto del fragmento donde se va a usar el adaptador
     private final Context context;
-    private final List<Movie> favoriteMovies;
+    private final List<Movie> peliculasFavoritas;
     private final OnMovieLongClickListener onMovieLongClickListener;
 
+    // Interfaz para los eventos de LongClick, para eliminar una peli de favoritos
     public interface OnMovieLongClickListener {
         void onMovieLongClick(Movie movie);
     }
-
-    public FavoritesAdapter(Context context, List<Movie> favoriteMovies, OnMovieLongClickListener listener) {
-        this.context = context;
-        this.favoriteMovies = favoriteMovies;
-        this.onMovieLongClickListener = listener;
+    // Constructor
+    public FavoritesAdapter(Context context, List<Movie> peliculasFavoritas, OnMovieLongClickListener listener) {
+        this.context=context;
+        this.peliculasFavoritas=peliculasFavoritas;
+        this.onMovieLongClickListener=listener;
     }
 
     @NonNull
@@ -42,38 +46,58 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
 
     @Override
     public void onBindViewHolder(@NonNull FavoriteViewHolder holder, int position) {
-        Movie movie = favoriteMovies.get(position);
+        // Se obtiene la película en cuestión
+        Movie pelicula=peliculasFavoritas.get(position);
 
-        holder.titleTextView.setText(movie.getTitulo());
-        holder.ratingTextView.setText(movie.getPuntuacion() != null ? "Rating: " + movie.getPuntuacion() : "Rating no disponible");
+        holder.txtTituloFavorita.setText(pelicula.getTitulo());
+        holder.txtRatingFavorita.setText(pelicula.getPuntuacion() != null ? "Rating: " + pelicula.getPuntuacion() : "Rating no disponible");
 
-        // Usar Glide para cargar la imagen
-        Glide.with(context)
-                .load(movie.getRutaPoster())
-                .into(holder.posterImageView);
+        // Se carga la imagen
+        Glide.with(context).load(pelicula.getRutaPoster()).into(holder.posterImageView);
 
-        // Configurar el evento de OnLongClick en todo el elemento
-        holder.itemView.setOnLongClickListener(v -> {
-            onMovieLongClickListener.onMovieLongClick(movie);
-            return true;
+        // Evento de Click, para abrir los datos de la película cuando se pulse en ella
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, MovieDetailsActivity.class);
+                intent.putExtra("pelicula", pelicula);
+                context.startActivity(intent);
+            }
+        });
+
+        // Evento de onLongClick, para eliminar la película de la BBDD
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                onMovieLongClickListener.onMovieLongClick(pelicula);
+                return true;
+            }
         });
     }
 
     @Override
     public int getItemCount() {
-        return favoriteMovies.size();
+        return peliculasFavoritas.size();
     }
 
     static class FavoriteViewHolder extends RecyclerView.ViewHolder {
         ImageView posterImageView;
-        TextView titleTextView;
-        TextView ratingTextView;
+        TextView txtTituloFavorita;
+        TextView txtRatingFavorita;
 
         public FavoriteViewHolder(@NonNull View itemView) {
             super(itemView);
-            posterImageView = itemView.findViewById(R.id.posterImageView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            ratingTextView = itemView.findViewById(R.id.ratingTextView);
+            // Inserta los datos en los componentes del "item_favorite_movie.xml"
+            posterImageView=itemView.findViewById(R.id.posterImageView);
+            txtTituloFavorita=itemView.findViewById(R.id.txtTituloFavorita);
+            txtRatingFavorita=itemView.findViewById(R.id.txtRatingFavorita);
         }
+    }
+
+    public void actualizarDatos(List<Movie> nuevasPeliculas) {
+        this.peliculasFavoritas.clear();
+        this.peliculasFavoritas.addAll(nuevasPeliculas);
+        // Para notificar al adaptador que los datos han cambiado
+        notifyDataSetChanged();
     }
 }

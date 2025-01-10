@@ -2,6 +2,7 @@ package edu.pruebas.rincon_alfonsoimdbapp.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,6 +75,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                Log.d("MovieAdapter", "Añadiendo película a favoritos: " + pelicula.getTitulo());
                 favoritesManager.addFavorite(userId, pelicula);
                 Toast.makeText(context, "Película añadida a favoritos", Toast.LENGTH_SHORT).show();
                 return true;
@@ -90,7 +92,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         TextView tituloTextView;
         TextView anioTextView;
         ImageView posterImageView;
-
+        // Inserta los datos en los componentes del "item_movie.xml"
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tituloTextView = itemView.findViewById(R.id.textViewTitle);

@@ -33,7 +33,7 @@ public class HomeFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private MovieAdapter adapter;
-    private IMDBApiService imdbApiService;
+    private IMDBApiService api;
     private List<Movie> movieList = new ArrayList<>();
 
     @Nullable
@@ -42,9 +42,9 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         // Configurar RecyclerView
-        recyclerView = view.findViewById(R.id.recyclerViewTopMovies);
+        recyclerView=view.findViewById(R.id.recyclerViewTopMovies);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        adapter = new MovieAdapter(getContext(), movieList);
+        adapter=new MovieAdapter(getContext(), movieList);
         recyclerView.setAdapter(adapter);
 
         // Configuración de Retrofit y OkHttp
@@ -65,43 +65,48 @@ public class HomeFragment extends Fragment {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        imdbApiService = retrofit.create(IMDBApiService.class);
+        api=retrofit.create(IMDBApiService.class);
 
-        // Llamada a la API
-        fetchTopMovies();
+        // Llamada al método que obtiene los datos de la API
+        mostrarPeliculas();
 
         return view;
     }
 
-    private void fetchTopMovies() {
-        Call<PopularMoviesResponse> call = imdbApiService.top10("US");
+    // Método que mostrará las películas en cuestión
+    private void mostrarPeliculas() {
+        Call<PopularMoviesResponse> call=api.top10("US");
         call.enqueue(new Callback<PopularMoviesResponse>() {
             @Override
             public void onResponse(Call<PopularMoviesResponse> call, Response<PopularMoviesResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<PopularMoviesResponse.Edge> edges = response.body().getData().getTopMeterTitles().getEdges();
+                    // verificamos que haya películas,y si es así, se vacía, para poder agregar nuevas
                     if (edges != null && !edges.isEmpty()) {
                         movieList.clear();
+                        // insertamos las películas
                         for (int i = 0; i < Math.min(edges.size(), 10); i++) {
-                            PopularMoviesResponse.Edge edge = edges.get(i);
-                            PopularMoviesResponse.Node node = edge.getNode();
-                            Movie movie = new Movie();
+                            PopularMoviesResponse.Edge edge=edges.get(i);
+                            PopularMoviesResponse.Node node=edge.getNode();
+
+                            Movie movie=new Movie();
                             movie.setId(node.getId());
                             movie.setTitulo(node.getTitleText().getText());
-                            movie.setFechaSalida(node.getReleaseDate().getYear() + "");
+                            // Ponemos "" para que nos deje insertar la fecha
+                            movie.setFechaSalida(node.getReleaseDate().getYear()+"");
                             movie.setRutaPoster(node.getPrimaryImage().getUrl());
                             movieList.add(movie);
                         }
                         adapter.notifyDataSetChanged();
                     }
                 } else {
-                    Log.e("HomeFragment", "Error en la respuesta: " + response.message());
+                    Log.e("HomeFragment", "Ha habido un error al cargar las películas" + response.message());
                 }
             }
-
+            // En caso de que falle, se mostrará esto por consola
             @Override
             public void onFailure(Call<PopularMoviesResponse> call, Throwable t) {
-                Log.e("HomeFragment", "Error en la llamada API: " + t.getMessage());
+                Log.e("HomeFragment", "Ha habido un error al llamar la API: " + t.getMessage());
             }
         });
     }

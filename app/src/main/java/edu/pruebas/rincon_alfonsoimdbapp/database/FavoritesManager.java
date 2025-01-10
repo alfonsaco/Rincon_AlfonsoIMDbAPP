@@ -4,11 +4,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.pruebas.rincon_alfonsoimdbapp.FavoritesDatabaseHelper;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
 
 public class FavoritesManager {
@@ -19,53 +19,90 @@ public class FavoritesManager {
         dbHelper = new FavoritesDatabaseHelper(context);
     }
 
-    public void addFavorite(String userId, Movie movie) {
+    // Método para que el usuario añada una película a favoritos
+    public void addFavorite(String idUsuario, Movie pelicula) {
+        Log.d("FavoritesManager", "Añadiendo película: " + pelicula.getTitulo() + ", ID: " + pelicula.getId() + ", Usuario: " + idUsuario);
+
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(FavoritesDatabaseHelper.COLUMN_USER_ID, userId);
-        values.put(FavoritesDatabaseHelper.COLUMN_MOVIE_ID, movie.getId());
-        values.put(FavoritesDatabaseHelper.COLUMN_TITLE, movie.getTitulo());
-        values.put(FavoritesDatabaseHelper.COLUMN_POSTER_PATH, movie.getRutaPoster());
-        values.put(FavoritesDatabaseHelper.COLUMN_RATING, movie.getPuntuacion());
+        values.put(FavoritesDatabaseHelper.COLUMNA_ID_USUARIO, idUsuario);
+        values.put(FavoritesDatabaseHelper.COLUMNA_ID_PELICULA, pelicula.getId());
+        values.put(FavoritesDatabaseHelper.COLUMNA_TITULO, pelicula.getTitulo());
+        values.put(FavoritesDatabaseHelper.COLUMNA_RUTA_POSTER, pelicula.getRutaPoster());
+        values.put(FavoritesDatabaseHelper.COLUMNA_CALIFICACION, pelicula.getPuntuacion());
 
-        db.insert(FavoritesDatabaseHelper.TABLE_NAME, null, values);
+        long result = db.insert(FavoritesDatabaseHelper.NOMBRE_TABLA, null, values);
+        if (result == -1) {
+            Log.e("FavoritesManager", "Error al insertar película en la base de datos.");
+        } else {
+            Log.d("FavoritesManager", "Película insertada con éxito. ID de inserción: " + result);
+        }
+
+        logAllFavorites();
+
         db.close();
     }
 
+    // Método para que el usuario pueda borrar una película que está en favoritos
     public void removeFavorite(String userId, String movieId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.delete(FavoritesDatabaseHelper.TABLE_NAME,
-                FavoritesDatabaseHelper.COLUMN_USER_ID + "=? AND " + FavoritesDatabaseHelper.COLUMN_MOVIE_ID + "=?",
+        int rowsAffected = db.delete(FavoritesDatabaseHelper.NOMBRE_TABLA,
+                FavoritesDatabaseHelper.COLUMNA_ID_USUARIO + "=? AND " + FavoritesDatabaseHelper.COLUMNA_ID_PELICULA + "=?",
                 new String[]{userId, movieId});
+        // Mostramos por consola el número de películas eliminadas
+        Log.d("FavoritesManager", "Películas eliminadas: " + rowsAffected);
         db.close();
     }
 
-    public List<Movie> getFavorites(String userId) {
+    // Este método nos da todas las películas relacionadas al usuario en cuestión
+    public List<Movie> getFavorites(String idUsuario) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Movie> favorites = new ArrayList<>();
 
-        Cursor cursor = db.query(FavoritesDatabaseHelper.TABLE_NAME,
-                null,
-                FavoritesDatabaseHelper.COLUMN_USER_ID + "=?",
-                new String[]{userId},
-                null, null, null);
+        // Buscamos a ver si hay registros con el usuario
+        Cursor cursor=db.query(FavoritesDatabaseHelper.NOMBRE_TABLA,
+                null, FavoritesDatabaseHelper.COLUMNA_ID_USUARIO + "=?",
+                new String[]{idUsuario}, null, null, null);
 
+        // Se hay registros, se mostrarán todas
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                Movie movie = new Movie(
-                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_MOVIE_ID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_TITLE)),
+                Movie pelicula=new Movie(
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_ID_PELICULA)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_TITULO)),
                         null,
-                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_POSTER_PATH)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_RUTA_POSTER)),
                         null,
-                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_RATING))
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_CALIFICACION))
                 );
-                favorites.add(movie);
+                Log.d("FavoritesManager", "Película en Favoritos: " + pelicula.getTitulo());
+                favorites.add(pelicula);
             }
             cursor.close();
         }
 
         db.close();
         return favorites;
+    }
+
+    // Se muestra por consola todos los elementos de la base de datos, para ver que funciona correctamente
+    public void logAllFavorites() {
+        SQLiteDatabase db=dbHelper.getReadableDatabase();
+        Cursor cursor=db.query(FavoritesDatabaseHelper.NOMBRE_TABLA, null, null, null, null, null, null);
+
+        // Se usa un cursor para recorrer todas las filas
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                String userId = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_ID_USUARIO));
+                String movieId = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_ID_PELICULA));
+                String title = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMNA_TITULO));
+                Log.d("FavoritesManager", "- Usuario: " + userId + ", Película: " + title + ", ID: " + movieId);
+            }
+            cursor.close();
+        } else {
+            Log.d("FavoritesManager", "No se encontraron registros en la tabla favoritos.");
+        }
+
+        db.close();
     }
 }
