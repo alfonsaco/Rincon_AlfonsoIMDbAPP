@@ -2,6 +2,7 @@ package edu.pruebas.rincon_alfonsoimdbapp.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,31 +11,30 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-
-import java.util.List;
-
 import edu.pruebas.rincon_alfonsoimdbapp.MovieDetailsActivity;
 import edu.pruebas.rincon_alfonsoimdbapp.R;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
 
+import java.util.List;
+
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.FavoriteViewHolder> {
 
-    // Contexto del fragmento donde se va a usar el adaptador
     private final Context context;
     private final List<Movie> peliculasFavoritas;
-    private final OnMovieLongClickListener onMovieLongClickListener;
+    // Esto es una interfaz para eliminar las peliculas de favoritos
+    private final OnFavoriteClickListener listener;
 
-    // Interfaz para los eventos de LongClick, para eliminar una peli de favoritos
-    public interface OnMovieLongClickListener {
-        void onMovieLongClick(Movie movie);
+    // Interfaz para eliminar de favoritos
+    public interface OnFavoriteClickListener {
+        void onFavoriteClick(Movie movie);
     }
+
     // Constructor
-    public FavoritesAdapter(Context context, List<Movie> peliculasFavoritas, OnMovieLongClickListener listener) {
-        this.context=context;
-        this.peliculasFavoritas=peliculasFavoritas;
-        this.onMovieLongClickListener=listener;
+    public FavoritesAdapter(Context context, List<Movie> peliculasFavoritas, OnFavoriteClickListener listener) {
+        this.context = context;
+        this.peliculasFavoritas = peliculasFavoritas;
+        this.listener = listener;
     }
 
     @NonNull
@@ -47,15 +47,23 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
     @Override
     public void onBindViewHolder(@NonNull FavoriteViewHolder holder, int position) {
         // Se obtiene la película en cuestión
-        Movie pelicula=peliculasFavoritas.get(position);
+        Movie pelicula = peliculasFavoritas.get(position);
 
+        // Cargar datos de la imagen: nombre y poster
         holder.txtTituloFavorita.setText(pelicula.getTitulo());
-        holder.txtRatingFavorita.setText(pelicula.getPuntuacion() != null ? "Rating: " + pelicula.getPuntuacion() : "Rating no disponible");
+        String rutaImagen = pelicula.getRutaPoster();
+        if (rutaImagen != null && !rutaImagen.isEmpty()) {
+            // Se verifica que sea válila la URL
+            if (!rutaImagen.startsWith("http://") && !rutaImagen.startsWith("https://")) {
+                rutaImagen = "https://image.tmdb.org/t/p/w500" + rutaImagen;
+            }
+            // Se pone con Glide
+            Glide.with(context)
+                    .load(rutaImagen)
+                    .into(holder.posterImageView);
+        }
 
-        // Se carga la imagen
-        Glide.with(context).load(pelicula.getRutaPoster()).into(holder.posterImageView);
-
-        // Evento de Click, para abrir los datos de la película cuando se pulse en ella
+        // Evento de Click para abrir detalles de la película
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,11 +73,13 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
             }
         });
 
-        // Evento de onLongClick, para eliminar la película de la BBDD
+        // Evento de onLongClick para eliminar la película de favoritos
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                onMovieLongClickListener.onMovieLongClick(pelicula);
+                if (listener != null) {
+                    listener.onFavoriteClick(pelicula);
+                }
                 return true;
             }
         });
@@ -77,7 +87,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
 
     @Override
     public int getItemCount() {
-        return peliculasFavoritas.size();
+        return (peliculasFavoritas != null) ? peliculasFavoritas.size() : 0;
     }
 
     static class FavoriteViewHolder extends RecyclerView.ViewHolder {
@@ -88,16 +98,16 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Favo
         public FavoriteViewHolder(@NonNull View itemView) {
             super(itemView);
             // Inserta los datos en los componentes del "item_favorite_movie.xml"
-            posterImageView=itemView.findViewById(R.id.posterImageView);
-            txtTituloFavorita=itemView.findViewById(R.id.txtTituloFavorita);
-            txtRatingFavorita=itemView.findViewById(R.id.txtRatingFavorita);
+            posterImageView = itemView.findViewById(R.id.posterImageView);
+            txtTituloFavorita = itemView.findViewById(R.id.txtTituloFavorita);
+            txtRatingFavorita = itemView.findViewById(R.id.txtRating);
         }
     }
 
+    // Método para actualizar los datos en el RecyclerView. Se vacía, y después, se añaden lo elementos de nuevo
     public void actualizarDatos(List<Movie> nuevasPeliculas) {
         this.peliculasFavoritas.clear();
         this.peliculasFavoritas.addAll(nuevasPeliculas);
-        // Para notificar al adaptador que los datos han cambiado
         notifyDataSetChanged();
     }
 }

@@ -81,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == RESULT_OK) {
+                        // Intent para realizar el inicio de ssesión
                         Intent data = result.getData();
                         if (data != null) {
                             Task<GoogleSignInAccount> signInTask = GoogleSignIn.getSignedInAccountFromIntent(data);
@@ -110,13 +111,15 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // Volvemos a la MainActivity tras aber iniciado sesión de forma correcta
+    // Volvemos a la MainActivity tras haber iniciado sesión de forma correcta
     private void irAMainActivity() {
         FirebaseUser usuario=firebaseAuth.getCurrentUser();
         if(usuario != null) {
+            // Enviamos los datos del email a la MainActivity (Nombre, email y la imagen)
             Intent intent=new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra("nombre", usuario.getDisplayName());
             intent.putExtra("email", usuario.getEmail());
+            // Si no hay, devuelve null
             intent.putExtra("imagen", usuario.getPhotoUrl() != null ? usuario.getPhotoUrl().toString() : null);
             startActivity(intent);
             finish();

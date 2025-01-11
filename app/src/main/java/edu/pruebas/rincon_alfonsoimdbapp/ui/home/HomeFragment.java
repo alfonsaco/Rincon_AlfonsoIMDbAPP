@@ -86,17 +86,45 @@ public class HomeFragment extends Fragment {
                         movieList.clear();
                         // insertamos las películas
                         for (int i = 0; i < Math.min(edges.size(), 10); i++) {
-                            PopularMoviesResponse.Edge edge=edges.get(i);
-                            PopularMoviesResponse.Node node=edge.getNode();
+                            PopularMoviesResponse.Edge edge = edges.get(i);
+                            PopularMoviesResponse.Node node = edge.getNode();
 
-                            Movie movie=new Movie();
-                            movie.setId(node.getId());
-                            movie.setTitulo(node.getTitleText().getText());
-                            // Ponemos "" para que nos deje insertar la fecha
-                            movie.setFechaSalida(node.getReleaseDate().getYear()+"");
-                            movie.setRutaPoster(node.getPrimaryImage().getUrl());
+                            Movie movie = new Movie();
+
+                            // Verificar y asignar el ID
+                            if (node.getId() != null) {
+                                movie.setId(node.getId());
+                            } else {
+                                movie.setId("ID no disponible");
+                            }
+
+                            // Verificar y asignar el Título
+                            if (node.getTitleText() != null && node.getTitleText().getText() != null) {
+                                movie.setTitulo(node.getTitleText().getText());
+                            } else {
+                                movie.setTitulo("Título no disponible");
+                            }
+
+                            // Verificar y asignar la Fecha de Salida
+                            if (node.getReleaseDate() != null) {
+                                movie.setFechaSalida(String.valueOf(node.getReleaseDate().getYear()));
+                            } else {
+                                movie.setFechaSalida("Año no disponible");
+                            }
+
+                            // Verificar y asignar la Ruta del Póster
+                            if (node.getPrimaryImage() != null && node.getPrimaryImage().getUrl() != null) {
+                                movie.setRutaPoster(node.getPrimaryImage().getUrl());
+                            } else {
+                                movie.setRutaPoster(""); // Se asigna una cadena vacía para manejarlo en el adaptador
+                            }
+
                             movieList.add(movie);
+
+                            // Añadir logs para depuración
+                            Log.d("HomeFragment", "Película " + (i + 1) + ": " + movie.getTitulo() + ", Año: " + movie.getFechaSalida() + ", RutaPoster: " + movie.getRutaPoster());
                         }
+
                         adapter.notifyDataSetChanged();
                     }
                 } else {

@@ -1,5 +1,6 @@
 package edu.pruebas.rincon_alfonsoimdbapp.ui.gallery;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.pruebas.rincon_alfonsoimdbapp.R;
@@ -37,29 +39,33 @@ public class SearchFragment extends Fragment {
     private FavoritesManager favoritesManager;
     private RecyclerView recyclerView;
     private FavoritesAdapter adapter;
-    private String userId;
+    private String idUsuario;
 
     private Button btnCompartir;
-    private ActivityResultLauncher<String[]> bluetoothPermissionLauncher;
+    private ActivityResultLauncher<String[]> launcherBluetooth;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Configurar el launcher para solicitar permisos
-        bluetoothPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestMultiplePermissions(),
-                result -> {
-                    boolean bluetoothConnectGranted = false;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        bluetoothConnectGranted = result.getOrDefault(android.Manifest.permission.BLUETOOTH_CONNECT, false);
-                    }
-                    boolean bluetoothScanGranted = false;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        bluetoothScanGranted = result.getOrDefault(android.Manifest.permission.BLUETOOTH_SCAN, false);
+        // Configurar el launcher para solicitar permisos de Bluetooth
+        launcherBluetooth = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                    boolean permisosConcedidos = false;
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        boolean bluetoothConnectGranted = result.getOrDefault(Manifest.permission.BLUETOOTH_CONNECT, false);
+                        boolean bluetoothScanGranted = result.getOrDefault(Manifest.permission.BLUETOOTH_SCAN, false);
+                        permisosConcedidos = bluetoothConnectGranted && bluetoothScanGranted;
+                    } else {
+                        // Para versiones anteriores a S, solo se verifica el permiso BLUETOOTH
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            permisosConcedidos = result.getOrDefault(Manifest.permission.BLUETOOTH, false);
+                        }
                     }
 
-                    if (bluetoothConnectGranted && bluetoothScanGranted) {
+                    // Verificar si han sido aceptados o no
+                    if (permisosConcedidos) {
                         mostrarDialogoJSON();
                     } else {
                         Toast.makeText(requireContext(), "Permisos de Bluetooth denegados", Toast.LENGTH_SHORT).show();
@@ -75,7 +81,10 @@ public class SearchFragment extends Fragment {
         // Obtenemos el usuario actual
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            userId = currentUser.getUid();
+            idUsuario = currentUser.getUid();
+        } else {
+            Toast.makeText(requireContext(), "Usuario no autenticado", Toast.LENGTH_SHORT).show();
+            // Manejar el caso donde el usuario no está autenticado
         }
 
         // Inicializar RecyclerView y FavoritesManager
@@ -91,24 +100,29 @@ public class SearchFragment extends Fragment {
         btnCompartir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-                            ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
 
-                        bluetoothPermissionLauncher.launch(new String[]{
-                                android.Manifest.permission.BLUETOOTH_CONNECT,
-                                android.Manifest.permission.BLUETOOTH_SCAN
-                        });
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    List<String> permisosNecesarios = new ArrayList<>();
+                    if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        permisosNecesarios.add(android.Manifest.permission.BLUETOOTH_CONNECT);
+                    }
+                    if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                        permisosNecesarios.add(android.Manifest.permission.BLUETOOTH_SCAN);
+                    }
+
+                    if (permisosNecesarios.isEmpty()) {
+                        launcherBluetooth.launch(permisosNecesarios.toArray(new String[0]));
                     } else {
                         mostrarDialogoJSON();
                     }
                 } else {
-                    // Android inferior a 12
+                    // Android inferior a S
                     if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-                        bluetoothPermissionLauncher.launch(new String[]{android.Manifest.permission.BLUETOOTH});
+                        launcherBluetooth.launch(new String[]{android.Manifest.permission.BLUETOOTH});
                     } else {
                         mostrarDialogoJSON();
                     }
+
                 }
             }
         });
@@ -119,7 +133,7 @@ public class SearchFragment extends Fragment {
     // Se crea el JSON de las películas
     private void mostrarDialogoJSON() {
         // Obtener las películas favoritas
-        List<Movie> favorites=favoritesManager.getFavorites(userId);
+        List<Movie> favorites = favoritesManager.getFavorites(idUsuario);
 
         if (favorites.isEmpty()) {
             Toast.makeText(requireContext(), "No tienes películas favoritas", Toast.LENGTH_SHORT).show();
@@ -136,7 +150,6 @@ public class SearchFragment extends Fragment {
         txtJSON.setText(jsonPeliculas);
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Películas Favoritas")
                 .setView(dialogView)
                 .setPositiveButton("Cerrar", null)
                 .show();
@@ -144,7 +157,7 @@ public class SearchFragment extends Fragment {
 
     // Se cargan las películas favoritas
     private void loadFavorites() {
-        List<Movie> favorites=favoritesManager.getFavorites(userId);
+        List<Movie> favorites = favoritesManager.getFavorites(idUsuario);
 
         if (favorites.isEmpty()) {
             Toast.makeText(requireContext(), "No hay películas favoritas para este usuario.", Toast.LENGTH_SHORT).show();
@@ -157,7 +170,7 @@ public class SearchFragment extends Fragment {
         // Configurar o actualizar el adaptador del RecyclerView
         if (adapter == null) {
             adapter = new FavoritesAdapter(requireContext(), favorites, movie -> {
-                favoritesManager.removeFavorite(userId, movie.getId());
+                favoritesManager.removeFavorite(idUsuario, movie.getId());
                 Toast.makeText(getContext(), "Película eliminada de favoritos", Toast.LENGTH_SHORT).show();
                 loadFavorites();
             });

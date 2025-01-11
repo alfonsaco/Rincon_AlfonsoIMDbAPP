@@ -4,10 +4,10 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    card_view:cardElevation="4dp"
-    card_view:cardCornerRadius="8dp"
+    android:layout_margin="8dp"
     android:backgroundTint="#FFF"
-    android:layout_margin="8dp">
+    card_view:cardCornerRadius="8dp"
+    card_view:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
         android:padding="8dp">
 
         <ImageView
-            android:id="@+id/imageViewPoster"
+            android:id="@+id/ivPoster"
             android:layout_width="100dp"
             android:layout_height="150dp"
             android:scaleType="centerCrop" />
@@ -26,25 +26,41 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:paddingStart="8dp">
+            android:paddingStart="8dp"
+            android:paddingLeft="8dp">
 
             <TextView
-                android:id="@+id/txtTituloPelicula"
+                android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Título de la Película"
-                android:textSize="17sp"
                 android:textColor="#1C1C1C"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/txtAñoPelicula"
+                android:id="@+id/tvReleaseDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2023"
+                android:text="Release Date: YYYY-MM-DD"
                 android:textColor="#1C1C1C"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+            <TextView
+                android:id="@+id/tvVoteAverage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rating: X.X"
+                android:textColor="#1C1C1C"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+            <TextView
+                android:id="@+id/tvOverview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Description"
+                android:textColor="#1C1C1C"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                 android:paddingTop="4dp" />
 
         </LinearLayout>

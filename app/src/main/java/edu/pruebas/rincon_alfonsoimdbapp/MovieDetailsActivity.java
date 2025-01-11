@@ -1,6 +1,5 @@
 package edu.pruebas.rincon_alfonsoimdbapp;
 
-import android.app.Activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,24 +16,21 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.bumptech.glide.Glide;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import edu.pruebas.rincon_alfonsoimdbapp.api.IMDBApiService;
-import edu.pruebas.rincon_alfonsoimdbapp.database.FavoritesManager;
+import edu.pruebas.rincon_alfonsoimdbapp.api.TMDBApiService;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
-import edu.pruebas.rincon_alfonsoimdbapp.models.MovieOverviewResponse;
+import edu.pruebas.rincon_alfonsoimdbapp.models.MovieDetailsResponse;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -59,28 +55,35 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> contactPickerLauncher;
     private ActivityResultLauncher<String> smsPermissionLauncher;
 
-    private static final String BASE_URL = "https://imdb-com.p.rapidapi.com/";
-    private IMDBApiService api;
+    private static final String TMDB_BASE_URL = "https://api.themoviedb.org/3/";
+    private static final String TMDB_API_KEY = "aaf2cf26c82660c7a38d10d55ed5c92d"; // Tu clave de API de TMDB
+
+    private TMDBApiService tmdbApiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
 
-        // Inicializar
+        // Inicializar vistas
         imageView = findViewById(R.id.imageView);
         txtTitulo = findViewById(R.id.txtTitulo);
         txtDescripcion = findViewById(R.id.txtDescripcion);
         txtFechaSalida = findViewById(R.id.txtFechaSalida);
         txtRating = findViewById(R.id.txtRating);
-        btnSMS=findViewById(R.id.btnSMS);
+        btnSMS = findViewById(R.id.btnSMS);
 
         // Se recibe la película desde el Intent
-        Intent intent=getIntent();
-        Movie pelicula=intent.getParcelableExtra("pelicula");
+        Intent intent = getIntent();
+        Movie pelicula = intent.getParcelableExtra("pelicula");
 
         if (pelicula != null) {
+            Log.d("MovieDetailsActivity", "Película recibida: " + pelicula.getTitulo());
             mostrarDetallesBasicos(pelicula);
+        } else {
+            Log.e("MovieDetailsActivity", "Película es nula");
+            Toast.makeText(this, "Película no encontrada", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         // Configurar launchers
@@ -90,6 +93,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         btnSMS.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (ContextCompat.checkSelfPermission(MovieDetailsActivity.this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                     seleccionarContacto();
                 } else {
@@ -100,126 +104,98 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private void mostrarDetallesBasicos(Movie pelicula) {
+        // Configuración de Retrofit y OkHttp para TMDB
         OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(chain -> {
-                    Request modifiedRequest = chain.request().newBuilder()
-                            .addHeader("X-RapidAPI-Key", "bdb1444c4amshd033444ce845bbbp12ff63jsn7bf5fe5f9fab")
-                            .addHeader("X-RapidAPI-Host", "imdb-com.p.rapidapi.com").build();
-                    return chain.proceed(modifiedRequest);
-                })
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://imdb-com.p.rapidapi.com/")
+                .baseUrl(TMDB_BASE_URL)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        api = retrofit.create(IMDBApiService.class);
+        tmdbApiService = retrofit.create(TMDBApiService.class);
 
-        Call<MovieOverviewResponse> call = api.obtencionDatos(pelicula.getId());
-        call.enqueue(new Callback<MovieOverviewResponse>() {
+        // Llamada a la API de TMDB para obtener detalles de la película
+        Call<MovieDetailsResponse> call = tmdbApiService.obtenerDetallesPeliculas(
+                pelicula.getId(),
+                TMDB_API_KEY,
+                "es-ES" // Idioma español
+        );
+
+        call.enqueue(new Callback<MovieDetailsResponse>() {
             @Override
-            public void onResponse(Call<MovieOverviewResponse> call, Response<MovieOverviewResponse> response) {
+            public void onResponse(Call<MovieDetailsResponse> call, Response<MovieDetailsResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    MovieOverviewResponse.Data data = response.body().getData();
-                    if (data != null) {
-                        MovieOverviewResponse.Title title = data.getTitle();
-                        if (title != null) {
-                            // Obtener descripción
-                            if (title.getPlot() != null && title.getPlot().getPlotText() != null) {
-                                String descripcion = title.getPlot().getPlotText().getPlainText();
-                                txtDescripcion.setText(descripcion != null ? descripcion : "Descripción no disponible");
-                            } else {
-                                txtDescripcion.setText("Descripción no disponible");
-                            }
+                    MovieDetailsResponse detalles = response.body();
 
-                            // Obtener rating
-                            if (title.getRatingsSummary() != null) {
-                                double rating = title.getRatingsSummary().getAggregateRating();
-                                txtRating.setText("Rating: " + rating);
-                            } else {
-                                txtRating.setText("Puntuación no disponible");
-                            }
-                        }
+                    // Asignar los datos a los TextViews
+                    txtDescripcion.setText(detalles.getDescripcion() != null ? detalles.getDescripcion() : "Descripción no disponible");
+                    txtRating.setText("Rating: " + detalles.getPuntuacion());
+                    txtFechaSalida.setText(detalles.getFechaSalida() != null ? formatearFecha(detalles.getFechaSalida()) : "Fecha no disponible");
+
+                    // Cargar la imagen del póster
+                    String posterPath = detalles.getRutaPoster();
+                    if (posterPath != null && !posterPath.isEmpty()) {
+                        String posterUrl = "https://image.tmdb.org/t/p/w500" + posterPath;
+                        Glide.with(MovieDetailsActivity.this)
+                                .load(posterUrl)
+                                .into(imageView);
                     }
 
+                    // Guardar el título y rating para el SMS
+                    movieTitle = detalles.getTitulo();
+                    movieRating = String.valueOf(detalles.getPuntuacion());
+
                 } else {
-                    Log.e("API Response", "Error en la respuesta: " + response.code());
+                    Log.e("MovieDetailsActivity", "Error en la respuesta de TMDB: " + response.code());
                     if (response.errorBody() != null) {
                         try {
                             String errorBody = response.errorBody().string();
-                            Log.e("API Error Body", errorBody);
+                            Log.e("MovieDetailsActivity", "Cuerpo del error: " + errorBody);
                         } catch (IOException e) {
-                            Log.e("API Error", "No se pudo leer el cuerpo del error: " + e.getMessage());
+                            Log.e("MovieDetailsActivity", "No se pudo leer el cuerpo del error: " + e.getMessage());
                         }
                     }
                     txtDescripcion.setText("Error al obtener descripción");
                     txtRating.setText("Error al obtener el rating");
+                    txtFechaSalida.setText("Error al obtener fecha");
                 }
             }
 
             @Override
-            public void onFailure(Call<MovieOverviewResponse> call, Throwable t) {
-                Log.e("API Error", "Error en la llamada API: " + t.getMessage());
+            public void onFailure(Call<MovieDetailsResponse> call, Throwable t) {
+                Log.e("MovieDetailsActivity", "Error en la llamada a TMDB: " + t.getMessage());
                 txtDescripcion.setText("Error al obtener descripción");
                 txtRating.setText("Error al obtener puntuación");
+                txtFechaSalida.setText("Error al obtener fecha");
             }
         });
 
         // Configuración básica con datos locales
         txtTitulo.setText(pelicula.getTitulo() != null ? pelicula.getTitulo() : "Título no disponible");
-        movieTitle = pelicula.getTitulo();
-        txtFechaSalida.setText(pelicula.getFechaSalida() != null ? pelicula.getFechaSalida() : "Fecha no disponible");
-
-        if (pelicula.getRutaPoster() != null) {
-            Glide.with(this).load(pelicula.getRutaPoster()).into(imageView);
-        }
     }
 
+    private String formatearFecha(String fecha) {
+        try {
+            // Asumiendo que la fecha viene en formato "YYYY-MM-DD"
+            SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date date = formatoEntrada.parse(fecha);
 
-
-    private void obtenerDetallesAdicionales(String movieId) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        IMDBApiService apiService = retrofit.create(IMDBApiService.class);
-
-        Call<MovieOverviewResponse> call = apiService.obtencionDatos(movieId);
-        call.enqueue(new Callback<MovieOverviewResponse>() {
-            @Override
-            public void onResponse(Call<MovieOverviewResponse> call, Response<MovieOverviewResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    MovieOverviewResponse movieDetails = response.body();
-
-                    String descripcion = movieDetails.getData().getTitle().getPlot().getPlotText().toString();
-                    txtDescripcion.setText(descripcion);
-
-                    if (movieDetails.getData().getTitle().getRatingsSummary() != null) {
-                        txtRating.setText(String.valueOf(movieDetails.getData().getTitle().getRatingsSummary().getAggregateRating()));
-                    } else {
-                        txtRating.setText("Puntuación no disponible");
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<MovieOverviewResponse> call, Throwable t) {
-                txtDescripcion.setText("No se pudo obtener la descripción");
-                txtRating.setText("No se pudo obtener la puntuación");
-                Log.e("API Error", "Error en la llamada a la API", t);
-            }
-        });
+            SimpleDateFormat formatoSalida = new SimpleDateFormat("'Fecha de estreno:' dd 'de' MMMM 'de' yyyy", Locale.getDefault());
+            return formatoSalida.format(date);
+        } catch (Exception e) {
+            Log.e("MovieDetailsActivity", "Error al formatear la fecha: " + e.getMessage());
+            return fecha; // Devolver la fecha sin formatear en caso de error
+        }
     }
 
     // Configuración de los Launchers
     private void setupLaunchers() {
         // Launcher para el permiso de contactos
-        contactPermissionLauncher=registerForActivityResult(
+        contactPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(), isGranted -> {
                     if (isGranted) {
                         seleccionarContacto();
@@ -266,7 +242,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     // Intent para seleccionar un contacto al cual enviarle el SMS
     private void seleccionarContacto() {
-        Intent intent=new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
         contactPickerLauncher.launch(intent);
     }
 
@@ -281,5 +257,4 @@ public class MovieDetailsActivity extends AppCompatActivity {
             Toast.makeText(this, "No se seleccionó ningún contacto", Toast.LENGTH_SHORT).show();
         }
     }
-
 }

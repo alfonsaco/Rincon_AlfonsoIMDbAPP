@@ -18,20 +18,22 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Rincon_AlfonsoIMDbAPP"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".MovieDetailsActivity"
+            android:name=".MovieListActivity"
             android:exported="false" />
-        <!-- Primero se ejecuta el Login -->
+        <activity
+            android:name=".MovieDetailsActivity"
+            android:exported="false" /> <!-- Primero se ejecuta el Login -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
@@ -47,7 +49,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Rincon_AlfonsoIMDbAPP.NoActionBar"></activity>
+            android:theme="@style/Theme.Rincon_AlfonsoIMDbAPP.NoActionBar" />
     </application>
 
 </manifest>

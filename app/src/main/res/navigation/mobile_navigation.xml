@@ -3,6 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
+    app:itemTextColor="@color/black"
+    app:itemIconTint="@color/black"
     app:startDestination="@+id/nav_home">
 
     <fragment

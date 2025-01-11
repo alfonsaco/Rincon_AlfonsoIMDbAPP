@@ -2,26 +2,38 @@ package edu.pruebas.rincon_alfonsoimdbapp.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.google.gson.annotations.SerializedName;
 
 public class Movie implements Parcelable {
-    private String id;
-    private String titulo;
-    private String fechaSalida;
-    private String rutaPoster;
-    private String descripcion;
-    private String puntuacion;
 
+    @SerializedName("id")
+    private String id;
+
+    @SerializedName("title")
+    private String titulo;
+
+    @SerializedName("release_date")
+    private String fechaSalida;
+
+    @SerializedName("poster_path")
+    private String rutaPoster;
+
+    @SerializedName("overview")
+    private String descripcion;
+
+    @SerializedName("vote_average")
+    private float puntuacion;
+
+    // Constructores
     public Movie() {
     }
-
-    // Constructor con todos los campos
-    public Movie(String id, String title, String releaseDate, String posterPath, String descripcion, String rating) {
+    public Movie(String id, String titulo, String fechaSalida, String rutaPoster, String descripcion, float puntuacion) {
         this.id = id;
-        this.titulo = title;
-        this.fechaSalida = releaseDate;
-        this.rutaPoster = posterPath;
+        this.titulo = titulo;
+        this.fechaSalida = fechaSalida;
+        this.rutaPoster = rutaPoster;
         this.descripcion = descripcion;
-        this.puntuacion = rating;
+        this.puntuacion = puntuacion;
     }
 
     // Constructor para el Parcel
@@ -31,7 +43,7 @@ public class Movie implements Parcelable {
         fechaSalida = in.readString();
         rutaPoster = in.readString();
         descripcion = in.readString();
-        puntuacion = in.readString();
+        puntuacion = in.readFloat();
     }
 
     // Métodos para la serialización con Parcelable
@@ -88,11 +100,11 @@ public class Movie implements Parcelable {
         this.descripcion = descripcion;
     }
 
-    public String getPuntuacion() {
+    public float getPuntuacion() {
         return puntuacion;
     }
 
-    public void setPuntuacion(String puntuacion) {
+    public void setPuntuacion(float puntuacion) {
         this.puntuacion = puntuacion;
     }
 
@@ -108,6 +120,6 @@ public class Movie implements Parcelable {
         dest.writeString(fechaSalida);
         dest.writeString(rutaPoster);
         dest.writeString(descripcion);
-        dest.writeString(puntuacion);
+        dest.writeFloat(puntuacion);
     }
 }
