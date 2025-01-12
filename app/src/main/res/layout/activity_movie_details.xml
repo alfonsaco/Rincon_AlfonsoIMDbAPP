@@ -3,15 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:background="#FFF"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MovieDetailsActivity">
 
     <LinearLayout
         android:id="@+id/linearLayout"
-        android:layout_width="350dp"
-        android:layout_height="550dp"
+        android:layout_width="343dp"
+        android:layout_height="527dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -32,38 +31,35 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:textSize="20sp"
-            android:textColor="#0E0E0E"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/txtFechaSalida"
-            android:textColor="#0E0E0E"
-            android:layout_marginTop="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp" />
 
         <TextView
             android:id="@+id/txtRating"
-            android:layout_marginTop="6dp"
-            android:textStyle="bold"
-            android:textColor="#0E0E0E"
-            android:textSize="17sp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textSize="17sp"
+            android:textStyle="bold" />
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="98dp"
+            android:layout_marginTop="5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/txtDescripcion"
                     android:layout_width="match_parent"
-                    android:textColor="#0E0E0E"
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
@@ -76,11 +72,11 @@
         android:id="@+id/btnSMS"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_marginTop="24dp"
-        android:backgroundTint="#101010"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#8E1313"
         android:text="ENVIAR POR SMS"
         android:textColor="#FFF"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

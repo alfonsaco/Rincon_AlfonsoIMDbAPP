@@ -9,8 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="#FFF" >
+        android:padding="8dp" >
 
         <ImageView
             android:id="@+id/posterImageView"
@@ -31,7 +30,6 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="#1E1E1E"
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>

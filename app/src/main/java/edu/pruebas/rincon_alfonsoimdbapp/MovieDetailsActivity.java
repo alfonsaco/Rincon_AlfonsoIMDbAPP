@@ -56,7 +56,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> smsPermissionLauncher;
 
     private static final String TMDB_BASE_URL = "https://api.themoviedb.org/3/";
-    private static final String TMDB_API_KEY = "aaf2cf26c82660c7a38d10d55ed5c92d"; // Tu clave de API de TMDB
+    private static final String TMDB_API_KEY = "aaf2cf26c82660c7a38d10d55ed5c92d";
 
     private TMDBApiService tmdbApiService;
 

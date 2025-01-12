@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF"
+    android:theme="@style/Theme.Rincon_AlfonsoIMDbAPP"
     tools:context=".ui.slideshow.SlideshowFragment">
 
 
@@ -47,7 +47,8 @@
         android:layout_marginTop="32dp"
         android:text="BUSCAR"
         android:textColor="#FFF"
-        android:backgroundTint="#1C1C1C"
+        android:elevation="5dp"
+        android:backgroundTint="#8E1313"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
