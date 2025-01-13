@@ -1,7 +1,6 @@
 package edu.pruebas.rincon_alfonsoimdbapp.ui.gallery;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -118,7 +117,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void mostrarDialogoJSON() {
-        List<Movie> favorites = favoritesManager.getFavorites(idUsuario);
+        List<Movie> favorites = favoritesManager.obtenerFavoritas(idUsuario);
         if (favorites.isEmpty()) {
             Toast.makeText(requireContext(), "No tienes películas favoritas", Toast.LENGTH_SHORT).show();
             return;
@@ -138,7 +137,7 @@ public class SearchFragment extends Fragment {
     }
 
     private void loadFavorites() {
-        List<Movie> favorites = favoritesManager.getFavorites(idUsuario);
+        List<Movie> favorites = favoritesManager.obtenerFavoritas(idUsuario);
         if (favorites.isEmpty()) {
             Toast.makeText(requireContext(), "No hay películas favoritas.", Toast.LENGTH_SHORT).show();
         } else {
@@ -147,7 +146,7 @@ public class SearchFragment extends Fragment {
 
         if (adapter == null) {
             adapter = new FavoritesAdapter(requireContext(), favorites, movie -> {
-                favoritesManager.removeFavorite(idUsuario, movie.getId());
+                favoritesManager.borrarFavorita(idUsuario, movie.getId());
                 loadFavorites();
             });
             recyclerView.setAdapter(adapter);

@@ -94,7 +94,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    favoritesManager.addFavorite(idUsuario, pelicula);
+                    favoritesManager.añadirFavorita(idUsuario, pelicula);
                     Toast.makeText(context, "Película añadida a favoritos", Toast.LENGTH_SHORT).show();
                     return true;
                 }

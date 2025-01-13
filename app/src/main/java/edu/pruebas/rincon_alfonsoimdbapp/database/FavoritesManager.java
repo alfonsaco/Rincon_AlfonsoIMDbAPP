@@ -20,7 +20,7 @@ public class FavoritesManager {
     }
 
     // Método para que el usuario añada una película a favoritos
-    public void addFavorite(String idUsuario, Movie pelicula) {
+    public void añadirFavorita(String idUsuario, Movie pelicula) {
         Log.d("FavoritesManager", "Añadiendo película: " + pelicula.getTitulo() + ", ID: " + pelicula.getId() + ", Usuario: " + idUsuario);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -38,13 +38,13 @@ public class FavoritesManager {
             Log.d("FavoritesManager", "Película insertada con éxito. ID de inserción: " + result);
         }
 
-        logAllFavorites();
+        logParaVerLasPeliculas();
 
         db.close();
     }
 
     // Método para que el usuario pueda borrar una película que está en favoritos
-    public void removeFavorite(String userId, String movieId) {
+    public void borrarFavorita(String userId, String movieId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rowsAffected = db.delete(FavoritesDatabaseHelper.NOMBRE_TABLA,
                 FavoritesDatabaseHelper.COLUMNA_ID_USUARIO + "=? AND " + FavoritesDatabaseHelper.COLUMNA_ID_PELICULA + "=?",
@@ -55,7 +55,7 @@ public class FavoritesManager {
     }
 
     // Este método nos da todas las películas relacionadas al usuario en cuestión
-    public List<Movie> getFavorites(String idUsuario) {
+    public List<Movie> obtenerFavoritas(String idUsuario) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Movie> favorites = new ArrayList<>();
 
@@ -93,7 +93,7 @@ public class FavoritesManager {
     }
 
     // Se muestra por consola todos los elementos de la base de datos, para ver que funciona correctamente
-    public void logAllFavorites() {
+    public void logParaVerLasPeliculas() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(FavoritesDatabaseHelper.NOMBRE_TABLA, null, null, null, null, null, null);
 

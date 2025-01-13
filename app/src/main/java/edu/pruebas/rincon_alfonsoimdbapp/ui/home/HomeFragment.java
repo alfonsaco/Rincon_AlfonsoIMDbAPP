@@ -60,10 +60,8 @@ public class HomeFragment extends Fragment {
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://imdb-com.p.rapidapi.com/")
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+                .baseUrl("https://imdb-com.p.rapidapi.com/").client(client)
+                .addConverterFactory(GsonConverterFactory.create()).build();
 
         api=retrofit.create(IMDBApiService.class);
 
