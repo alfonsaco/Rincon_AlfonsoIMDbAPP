@@ -1,3 +1,5 @@
+// package edu.pruebas.rincon_alfonsoimdbapp.ui.home;
+
 package edu.pruebas.rincon_alfonsoimdbapp.ui.home;
 
 import android.os.Bundle;
@@ -21,6 +23,7 @@ import edu.pruebas.rincon_alfonsoimdbapp.adapters.MovieAdapter;
 import edu.pruebas.rincon_alfonsoimdbapp.api.IMDBApiService;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
 import edu.pruebas.rincon_alfonsoimdbapp.models.PopularMoviesResponse;
+import edu.pruebas.rincon_alfonsoimdbapp.utils.Constants;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Call;
@@ -34,20 +37,22 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private MovieAdapter adapter;
     private IMDBApiService api;
-    private List<Movie> movieList = new ArrayList<>();
+    private List<Movie> listaPeliculas = new ArrayList<>();
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         // Configurar RecyclerView
-        recyclerView=view.findViewById(R.id.recyclerViewTopMovies);
+        recyclerView = view.findViewById(R.id.recyclerViewTopMovies);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        adapter=new MovieAdapter(getContext(), movieList);
+        // Pasar la fuente "IMD" al adaptador
+        adapter = new MovieAdapter(getContext(), listaPeliculas, Constants.SOURCE_IMD);
         recyclerView.setAdapter(adapter);
 
-        // Configuración de Retrofit y OkHttp
+        // Configuración de Retrofit y OkHttp para IMD. Se da la URL y la clase
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(chain -> {
                     Request modifiedRequest = chain.request().newBuilder()
@@ -56,14 +61,13 @@ public class HomeFragment extends Fragment {
                     return chain.proceed(modifiedRequest);
                 })
                 .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build();
+                .readTimeout(30, TimeUnit.SECONDS).build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://imdb-com.p.rapidapi.com/").client(client)
                 .addConverterFactory(GsonConverterFactory.create()).build();
 
-        api=retrofit.create(IMDBApiService.class);
+        api = retrofit.create(IMDBApiService.class);
 
         // Llamada al método que obtiene los datos de la API
         mostrarPeliculas();
@@ -71,18 +75,18 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    // Método que mostrará las películas en cuestión
+    // Método que mostrará las películas o series en cuestión
     private void mostrarPeliculas() {
-        Call<PopularMoviesResponse> call=api.top10("US");
+        Call<PopularMoviesResponse> call = api.top10("US");
         call.enqueue(new Callback<PopularMoviesResponse>() {
             @Override
             public void onResponse(Call<PopularMoviesResponse> call, Response<PopularMoviesResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<PopularMoviesResponse.Edge> edges = response.body().getData().getTopMeterTitles().getEdges();
-                    // verificamos que haya películas,y si es así, se vacía, para poder agregar nuevas
+                    // Verificamos que haya películas y series, y si es así, se vacía la lista para poder agregar nuevas
                     if (edges != null && !edges.isEmpty()) {
-                        movieList.clear();
-                        // insertamos las películas
+                        listaPeliculas.clear();
+                        // Insertamos las películas y series
                         for (int i = 0; i < Math.min(edges.size(), 10); i++) {
                             PopularMoviesResponse.Edge edge = edges.get(i);
                             PopularMoviesResponse.Node node = edge.getNode();
@@ -114,22 +118,20 @@ public class HomeFragment extends Fragment {
                             if (node.getPrimaryImage() != null && node.getPrimaryImage().getUrl() != null) {
                                 movie.setRutaPoster(node.getPrimaryImage().getUrl());
                             } else {
-                                movie.setRutaPoster(""); // Se asigna una cadena vacía para manejarlo en el adaptador
+                                // No pondremos nada
+                                movie.setRutaPoster("");
                             }
 
-                            movieList.add(movie);
-
-                            // Añadir logs para depuración
-                            Log.d("HomeFragment", "Película " + (i + 1) + ": " + movie.getTitulo() + ", Año: " + movie.getFechaSalida() + ", RutaPoster: " + movie.getRutaPoster());
+                            listaPeliculas.add(movie);
                         }
 
                         adapter.notifyDataSetChanged();
                     }
                 } else {
-                    Log.e("HomeFragment", "Ha habido un error al cargar las películas" + response.message());
+                    Log.e("HomeFragment", "Ha habido un error al cargar las películas: " + response.message());
                 }
             }
-            // En caso de que falle, se mostrará esto por consola
+
             @Override
             public void onFailure(Call<PopularMoviesResponse> call, Throwable t) {
                 Log.e("HomeFragment", "Ha habido un error al llamar la API: " + t.getMessage());

@@ -2,8 +2,6 @@ package edu.pruebas.rincon_alfonsoimdbapp;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -16,10 +14,12 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import edu.pruebas.rincon_alfonsoimdbapp.adapters.MovieAdapter;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
 import edu.pruebas.rincon_alfonsoimdbapp.models.MovieResponse;
+import edu.pruebas.rincon_alfonsoimdbapp.utils.Constants;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -43,21 +43,24 @@ public class MovieListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_movie_list);
 
         recyclerView = findViewById(R.id.recyclerView);
-
-        // Configurar RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        movieAdapter = new MovieAdapter(this, new ArrayList<>());
+
+        // Inicializar el adaptador con una lista vacía y asignarlo al RecyclerView
+        movieAdapter = new MovieAdapter(this, new ArrayList<>(), Constants.SOURCE_TMDB);
         recyclerView.setAdapter(movieAdapter);
 
         // OkHttpClient y Gson
-        client = new OkHttpClient();
+        client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build();
         gson = new Gson();
 
-        // Obtener datos del Intent
+        // Se obtienen los datos del Intent
         int fecha = getIntent().getIntExtra("fecha", 0);
         int generoId = getIntent().getIntExtra("generoId", 0);
 
-        // Se verifica una vez más que los datos sean válidos, y que hay una fecha y un id numérico
+        // Verificar que los datos sean válidos
         if (fecha == 0 || generoId == 0) {
             Toast.makeText(this, "Datos inválidos", Toast.LENGTH_SHORT).show();
             finish();
@@ -74,7 +77,7 @@ public class MovieListActivity extends AppCompatActivity {
                 "&page=1&primary_release_year=" + año +
                 "&with_genres=" + idGenero;
 
-        // Se crea la solicitud
+        // Crear la solicitud
         Request request = new Request.Builder().url(url).get()
                 .addHeader("accept", "application/json").build();
 
@@ -84,6 +87,7 @@ public class MovieListActivity extends AppCompatActivity {
                 // Manejar fallo en la solicitud
                 runOnUiThread(() -> {
                     Toast.makeText(MovieListActivity.this, "Error al cargar películas", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error en la solicitud de películas", e);
                 });
             }
 
@@ -95,22 +99,22 @@ public class MovieListActivity extends AppCompatActivity {
 
                     // Analizar JSON
                     MovieResponse movieResponse = gson.fromJson(responseBody, MovieResponse.class);
-                    List<Movie> movies = movieResponse.getResults();
+                    List<Movie> peliculas = movieResponse.getResults();
 
                     // Verificar la lista de películas por consola
-                    if (movies != null) {
-                        Log.d(TAG, "Número de películas recibidas: " + movies.size());
-                        if (!movies.isEmpty()) {
-                            Log.d(TAG, "Primera película: " + movies.get(0).getTitulo());
+                    if (peliculas != null) {
+                        Log.d(TAG, "Número de películas recibidas: " + peliculas.size());
+                        if (!peliculas.isEmpty()) {
+                            Log.d(TAG, "Primera película: " + peliculas.get(0).getTitulo());
                         }
                     } else {
                         Log.e(TAG, "La lista de películas es nula.");
                     }
 
-                    // Actualizar RecyclerView en el hilo principal
+                    // Actualizar RecyclerView
                     runOnUiThread(() -> {
-                        if (movies != null && !movies.isEmpty()) {
-                            movieAdapter.setMovies(movies);
+                        if (peliculas != null && !peliculas.isEmpty()) {
+                            movieAdapter.setMovies(peliculas);
                         } else {
                             Toast.makeText(MovieListActivity.this, "No se encontraron películas", Toast.LENGTH_SHORT).show();
                         }
@@ -119,6 +123,7 @@ public class MovieListActivity extends AppCompatActivity {
                     // Caso de error
                     runOnUiThread(() -> {
                         Toast.makeText(MovieListActivity.this, "Error al cargar películas", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Respuesta no exitosa: " + response.message());
                     });
                 }
             }

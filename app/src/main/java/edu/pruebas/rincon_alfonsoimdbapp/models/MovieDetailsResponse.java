@@ -1,3 +1,5 @@
+// package edu.pruebas.rincon_alfonsoimdbapp.models;
+
 package edu.pruebas.rincon_alfonsoimdbapp.models;
 
 import com.google.gson.annotations.SerializedName;
@@ -44,5 +46,29 @@ public class MovieDetailsResponse {
 
     public String getRutaPoster() {
         return rutaPoster;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public void setFechaSalida(String fechaSalida) {
+        this.fechaSalida = fechaSalida;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public void setPuntuacion(float puntuacion) {
+        this.puntuacion = puntuacion;
+    }
+
+    public void setRutaPoster(String rutaPoster) {
+        this.rutaPoster = rutaPoster;
     }
 }

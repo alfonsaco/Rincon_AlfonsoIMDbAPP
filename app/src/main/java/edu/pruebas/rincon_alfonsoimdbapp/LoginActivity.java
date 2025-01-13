@@ -103,6 +103,7 @@ public class LoginActivity extends AppCompatActivity {
     private void autentificarFirebase(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
+            // Si la autenticación es exitosa, llamamos al método de IrAMainActivity. De lo contrario, sale un Toast
                     if (task.isSuccessful()) {
                         irAMainActivity();
                     } else {
@@ -111,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // Volvemos a la MainActivity tras haber iniciado sesión de forma correcta
+    // Vamos a la MainActivity tras haber iniciado sesión de forma correcta
     private void irAMainActivity() {
         FirebaseUser usuario=firebaseAuth.getCurrentUser();
         if(usuario != null) {
@@ -119,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent=new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra("nombre", usuario.getDisplayName());
             intent.putExtra("email", usuario.getEmail());
-            // Si no hay, devuelve null
+            // Si no hay una iamgen, devuelve null
             intent.putExtra("imagen", usuario.getPhotoUrl() != null ? usuario.getPhotoUrl().toString() : null);
             startActivity(intent);
             finish();

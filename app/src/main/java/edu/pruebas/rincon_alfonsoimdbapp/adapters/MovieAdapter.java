@@ -1,3 +1,5 @@
+// package edu.pruebas.rincon_alfonsoimdbapp.adapters;
+
 package edu.pruebas.rincon_alfonsoimdbapp.adapters;
 
 import android.content.Context;
@@ -7,11 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -20,6 +23,7 @@ import edu.pruebas.rincon_alfonsoimdbapp.MovieDetailsActivity;
 import edu.pruebas.rincon_alfonsoimdbapp.R;
 import edu.pruebas.rincon_alfonsoimdbapp.database.FavoritesManager;
 import edu.pruebas.rincon_alfonsoimdbapp.models.Movie;
+import edu.pruebas.rincon_alfonsoimdbapp.utils.Constants;
 
 import java.util.List;
 
@@ -27,12 +31,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     private final Context context;
     private final List<Movie> peliculas;
+    private final String source;
     private final FavoritesManager favoritesManager;
+    private final FirebaseUser usuarioFirebase;
 
-    public MovieAdapter(Context context, List<Movie> peliculas) {
+    // Constructor
+    public MovieAdapter(Context context, List<Movie> peliculas, String source) {
         this.context = context;
         this.peliculas = peliculas;
+        this.source = source;
         this.favoritesManager = new FavoritesManager(context);
+        this.usuarioFirebase = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     @NonNull
@@ -46,61 +55,67 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Movie pelicula = peliculas.get(position);
 
-        // Verificar los datos de la película por consola
+        // Verificar que la película no sea nula
         if (pelicula != null) {
-            Log.d("MovieAdapter", "Bind position: " + position + ", Título: " + pelicula.getTitulo());
-            Log.d("MovieAdapter", "Ruta Poster: " + pelicula.getRutaPoster());
-            Log.d("MovieAdapter", "Fecha Salida: " + pelicula.getFechaSalida());
-        } else {
-            Log.e("MovieAdapter", "Película en posición " + position + " es nula.");
-        }
-
-        // Asignar datos a los componentes. Se usará el título, poster y el año
-        holder.tituloTextView.setText(pelicula.getTitulo());
-        String anio = "Año no disponible";
-        if (pelicula.getFechaSalida() != null && !pelicula.getFechaSalida().isEmpty()) {
-            anio = pelicula.getFechaSalida().substring(0, 4);
-        }
-        holder.anioTextView.setText(anio);
-
-        // Cargar la imagen del póster usando Glide
-        String rutaImagen = pelicula.getRutaPoster();
-        if (rutaImagen != null && !rutaImagen.isEmpty()) {
-            // Verificar si la URL es válida
-            if (!rutaImagen.startsWith("http://") && !rutaImagen.startsWith("https://")) {
-                rutaImagen = "https://image.tmdb.org/t/p/w500" + rutaImagen;
+            // Asignar datos a los componentes
+            holder.tituloTextView.setText(pelicula.getTitulo());
+            String año = "Año no disponible";
+            if (pelicula.getFechaSalida() != null && !pelicula.getFechaSalida().isEmpty()) {
+                año = pelicula.getFechaSalida().substring(0, 4);
             }
-            Glide.with(context)
-                    .load(rutaImagen)
-                    .into(holder.posterImageView);
-        }
+            holder.anioTextView.setText(año);
 
-        // Abrir datos de la película al hacer Click
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, MovieDetailsActivity.class);
-                intent.putExtra("pelicula", pelicula);
-                context.startActivity(intent);
+            // Cargar la imagen del póster usando Glide
+            String rutaImagen = pelicula.getRutaPoster();
+            if (rutaImagen != null && !rutaImagen.isEmpty()) {
+                if (!rutaImagen.startsWith("http://") && !rutaImagen.startsWith("https://")) {
+                    if (source.equals(Constants.SOURCE_TMDB)) {
+                        // Se verifica que la ruta contenga ese texto
+                        rutaImagen = "https://image.tmdb.org/t/p/w500" + rutaImagen;
+                    } else if (source.equals(Constants.SOURCE_IMD)) {
+                        rutaImagen = "https://image.imdb.com" + rutaImagen;
+                    }
+                }
+                Glide.with(context)
+                        .load(rutaImagen)
+                        .into(holder.posterImageView);
             }
-        });
 
-        // Listener para añadir a favoritos. Se obtiene el usuario actual, para diferenciar películas
-        // favoritas entre usuarios
-        FirebaseUser usuarioFirebase = FirebaseAuth.getInstance().getCurrentUser();
-        if (usuarioFirebase != null) {
-            String idUsuario = usuarioFirebase.getUid();
-            // Evento de LongClick, que añadirá a favoritos la película
+            // Manejar el clic normal para abrir detalles
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, MovieDetailsActivity.class);
+                    intent.putExtra("pelicula", pelicula);
+                    intent.putExtra("source", source);
+                    context.startActivity(intent);
+                }
+            });
+
+            // Manejar el clic largo para añadir a favoritos
             holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    favoritesManager.añadirFavorita(idUsuario, pelicula);
-                    Toast.makeText(context, "Película añadida a favoritos", Toast.LENGTH_SHORT).show();
+                    if (usuarioFirebase != null) {
+                        String idUsuario = usuarioFirebase.getUid();
+                        boolean noAñadido = favoritesManager.añadirFavorita(idUsuario, pelicula);
+                        // COn el boolean, se verifica si la película ha sido añadida anteriormente o no
+                        if (noAñadido) {
+                            Toast.makeText(context, "Película añadida a favoritos", Toast.LENGTH_SHORT).show();
+                            Log.d("MovieAdapter", "Película añadida a favoritos: " + pelicula.getTitulo());
+                        } else {
+                            // Ya fue añadida
+                            Toast.makeText(context, "La película ya está en favoritos", Toast.LENGTH_SHORT).show();
+                            Log.d("MovieAdapter", "Película ya estaba en favoritos: " + pelicula.getTitulo());
+                        }
+                        return true;
+                    }
                     return true;
                 }
             });
+
         } else {
-            holder.itemView.setOnLongClickListener(null);
+            Log.e("MovieAdapter", "Película en posición " + position + " es nula.");
         }
     }
 
@@ -123,7 +138,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Ponemos los datos en los respectivos sitios
+            // Obtener los componentes por su id
             tituloTextView = itemView.findViewById(R.id.txtTituloPelicula);
             anioTextView = itemView.findViewById(R.id.txtAñoPelicula);
             posterImageView = itemView.findViewById(R.id.imageViewPoster);
