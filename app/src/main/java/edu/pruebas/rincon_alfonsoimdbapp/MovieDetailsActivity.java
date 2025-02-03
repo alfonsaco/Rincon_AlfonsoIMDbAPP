@@ -60,7 +60,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     // URL y Keys de las API
     private static final String TMDB_BASE_URL = "https://api.themoviedb.org/3/";
-    private static final String TMDB_API_KEY = "aaf2cf26c82660c7a38d10d55ed5c92d";
+    private static final String TMDB_KEY = "aaf2cf26c82660c7a38d10d55ed5c92d";
     private static final String IMD_BASE_URL = "https://imdb-com.p.rapidapi.com/";
 
     private TMDBApiService tmdbApiService;
@@ -139,7 +139,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         // Llamada a la API de TMDB para obtener detalles de la película
         Call<MovieDetailsResponse> call = tmdbApiService.obtenerDetallesPeliculas(
                 pelicula.getId(),
-                TMDB_API_KEY,
+                TMDB_KEY,
                 "es-ES"
         );
 
