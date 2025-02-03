@@ -57,7 +57,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
         if (pelicula != null) {
             // Asignar datos a los componentes
             holder.tituloTextView.setText(pelicula.getTitulo());
-            String año = "Año no disponible";
+            String año = "";
             if (pelicula.getFechaSalida() != null && !pelicula.getFechaSalida().isEmpty()) {
                 año = pelicula.getFechaSalida().substring(0, 4);
             }
