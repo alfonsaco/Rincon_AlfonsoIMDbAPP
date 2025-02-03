@@ -88,7 +88,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             } else {
                 obtenerDetallesTMDB(pelicula);
             }
-            // Configuración básica: se muestra el título desde el objeto local
+
             txtTitulo.setText(pelicula.getTitulo() != null ? pelicula.getTitulo() : "Título no disponible");
         } else {
             Toast.makeText(this, "Contenido no encontrado", Toast.LENGTH_SHORT).show();
